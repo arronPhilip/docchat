@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en" data-theme="ocean">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DocChat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M16 4h17a3 3 0 0 1 3 3v34a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12z' fill='none' stroke='%232f73b5' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cellipse cx='34' cy='25' rx='12' ry='10' fill='%2322aab5' stroke='%23fff' stroke-width='2.5'/%3E%3Cpath d='M26 31l-3 7 8-4z' fill='%2322aab5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/theme.js"></script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- Colors are inline (via theme variables) because page CSS can't reach inside <use> copies -->
+  <symbol id="logo" viewBox="0 0 48 48">
+    <g style="fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round">
+      <path d="M16 4h17a3 3 0 0 1 3 3v34a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12z"/>
+      <path d="M16 4v6a2 2 0 0 1-2 2H8"/>
+    </g>
+    <path style="fill:none;stroke:color-mix(in srgb, var(--accent-2) 35%, var(--accent-soft));stroke-width:4;stroke-linecap:round" d="M12.5 40a17 17 0 0 1 11-15"/>
+    <ellipse style="fill:var(--accent-2);stroke:var(--panel-solid);stroke-width:2.5" cx="34" cy="25" rx="12.5" ry="10.5"/>
+    <path style="fill:var(--accent-2)" d="M26 31l-3.5 7.5 9-4.5z"/>
+    <g style="fill:#fff"><circle cx="29.5" cy="25" r="1.7"/><circle cx="34" cy="25" r="1.7"/><circle cx="38.5" cy="25" r="1.7"/></g>
+  </symbol>
+</svg>
+
+<div class="app">
+  <!-- ============ Left: brand + chat history ============ -->
+  <aside class="sidebar card" id="sidebar">
+    <div class="brand">
+      <svg class="logo" aria-hidden="true"><use href="#logo"/></svg>
+      <div>
+        <h1 class="wordmark" aria-label="DocChat"><b>DOC</b>CHAT</h1>
+        <p class="tagline">Upload<i>|</i>Converse<i>|</i>Know</p>
+      </div>
+    </div>
+
+    <button class="btn primary new-chat" id="newChat"><span data-icon="plus"></span>New chat<kbd>Ctrl K</kbd></button>
+
+    <label class="search"><span data-icon="search"></span><input id="search" type="search" placeholder="Search chats" aria-label="Search chats"></label>
+
+    <div class="chats-head"><p class="label">Recent chats</p></div>
+    <ul class="chats" id="chatList"></ul>
+
+    <div class="side-footer">
+      <div class="appearance">
+        <div class="swatches" id="swatches" role="radiogroup" aria-label="Color theme">
+          <button class="swatch" role="radio" data-theme="ocean" title="DocChat blue" style="--a:#2f73b5;--b:#22aab5"></button>
+          <button class="swatch" role="radio" data-theme="terracotta" title="Terracotta" style="--a:#c8643b;--b:#e6a067"></button>
+          <button class="swatch" role="radio" data-theme="forest" title="Forest" style="--a:#3f7d4e;--b:#9db556"></button>
+          <button class="swatch" role="radio" data-theme="twilight" title="Twilight" style="--a:#6b4fd8;--b:#d55ca8"></button>
+          <button class="swatch" role="radio" data-theme="ink" title="Ink" style="--a:#111;--b:#8a8a8a"></button>
+        </div>
+        <div class="mode-toggle" id="modeToggle" role="group" aria-label="Light or dark mode">
+          <button data-mode="light" title="Light" aria-label="Light mode"><span data-icon="sun"></span></button>
+          <button data-mode="auto" title="Match system" aria-label="Match system"><span data-icon="monitor"></span></button>
+          <button data-mode="dark" title="Dark" aria-label="Dark mode"><span data-icon="moon"></span></button>
+        </div>
+      </div>
+      <div class="quota" id="quota" hidden><div class="quota-text"><span id="quotaText"></span></div><div class="quota-bar"><span id="quotaBar"></span></div></div>
+      <div class="provider"><span class="dot"></span><span id="providerName">Connecting…</span></div>
+    </div>
+  </aside>
+
+  <!-- ============ Center: conversation ============ -->
+  <main class="main card">
+    <header class="topbar">
+      <button class="icon-btn only-mobile" id="openSidebar" aria-label="Open chats"><span data-icon="menu"></span></button>
+      <div class="title-wrap">
+        <h2 class="chat-title" id="chatTitle">New chat</h2>
+        <div class="chat-meta" id="chatMeta">Upload a document to get started</div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="exportBtn" title="Export chat as Markdown" aria-label="Export chat"><span data-icon="download"></span></button>
+        <button class="icon-btn" id="deleteBtn" title="Delete chat" aria-label="Delete chat"><span data-icon="trash"></span></button>
+        <button class="icon-btn only-narrow" id="openPanel" title="Documents and tools" aria-label="Open documents panel"><span data-icon="panel"></span></button>
+      </div>
+    </header>
+
+    <div class="log" id="log" aria-live="polite"></div>
+
+    <form class="composer" id="form">
+      <div class="composer-inner">
+        <div class="tools">
+          <div class="styles" id="styles" role="group" aria-label="Answer style">
+            <button type="button" data-style="concise">Concise</button>
+            <button type="button" data-style="balanced">Balanced</button>
+            <button type="button" data-style="detailed">Detailed</button>
+            <button type="button" data-style="simple">Simple</button>
+          </div>
+          <span class="hint">Enter to send · Shift + Enter for a new line</span>
+        </div>
+        <div class="row">
+          <button type="button" class="icon-btn attach" id="attachBtn" title="Add documents" aria-label="Add documents"><span data-icon="paperclip"></span></button>
+          <textarea id="q" rows="1" placeholder="Upload a document, then ask anything…" aria-label="Your question"></textarea>
+          <button id="send" aria-label="Send" disabled><span data-icon="arrowUp"></span></button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <!-- ============ Right: documents, insights, tools ============ -->
+  <aside class="panel card" id="panel">
+    <div class="panel-head">
+      <p class="label">Documents</p>
+      <span class="count" id="docCount"></span>
+      <button class="icon-btn only-narrow" id="closePanel" aria-label="Close panel"><span data-icon="x"></span></button>
+    </div>
+    <label class="drop" id="drop">
+      <input type="file" id="file" multiple hidden accept=".pdf,.docx,.txt,.md,.csv,.json,.py,.html,.log,.png,.jpg,.jpeg,.webp,.gif">
+      <span class="d-icon"><span data-icon="upload"></span></span>
+      <span><b>Add documents</b><span id="formats">PDF, Word, text or images</span></span>
+    </label>
+    <ul class="docs" id="docs"></ul>
+
+    <section class="insight" id="insight"></section>
+
+    <section>
+      <p class="label" style="margin-bottom:10px">Quick actions</p>
+      <div class="actions-grid" id="actions"></div>
+    </section>
+
+    <section>
+      <p class="label" style="margin-bottom:10px">At a glance</p>
+      <div class="stats" id="stats"></div>
+    </section>
+  </aside>
+</div>
+
+<div class="dropzone-overlay" id="dropOverlay"><div><span data-icon="upload"></span>Drop files to add them to this chat</div></div>
+<div class="scrim" id="scrim"></div>
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalText">
+    <h3 id="modalTitle"></h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel">Cancel</button>
+      <button class="btn danger" id="modalOk">Delete</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

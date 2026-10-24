@@ -1,0 +1,24 @@
+# Render Blueprint: deploys DocChat as a free web service.
+# In Render: New + > Blueprint > pick this repository. You'll be asked for GEMINI_API_KEY.
+services:
+  - type: web
+    name: docchat
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # One worker (SQLite + daily counters live in one process), threads so several people can chat at once
+    startCommand: gunicorn app:app --workers 1 --worker-class gthread --threads 8 --timeout 180 --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/config
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: PROVIDER
+        value: gemini
+      - key: DOCCHAT_PUBLIC
+        value: "1"
+      - key: DAILY_LIMIT          # questions + overviews per visitor per day; 0 = unlimited
+        value: "0"
+      - key: GLOBAL_DAILY_LIMIT   # for the whole site per day; 0 = unlimited (set e.g. 300 to protect your quota)
+        value: "0"
+      - key: GEMINI_API_KEY       # you paste this in Render's dashboard; it is never stored in the code
+        sync: false

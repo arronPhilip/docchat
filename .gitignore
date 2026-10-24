@@ -1,0 +1,9 @@
+# Secrets and local data: never upload these
+.env
+*.db
+*.db-journal
+
+# Local tooling
+.venv/
+__pycache__/
+.claude/
