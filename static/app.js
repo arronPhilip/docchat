@@ -377,7 +377,7 @@ async function mountGoogleButton() {
   const slot = $("#gsiButton");
   if (!slot) return;
   try { await loadGoogleScript(); }
-  catch (e) { slot.innerHTML = `<p class="error">Couldn't load Google sign-in. Check your connection and reload.</p>`; return; }
+  catch (e) { slot.innerHTML = `<p class="error">Couldn't load Google sign-in. If you use an ad or tracker blocker, allow accounts.google.com on this site, then reload.</p>`; return; }
   if (!gsiReady) {
     google.accounts.id.initialize({ client_id: state.config.google_client_id, callback: onGoogleCredential, ux_mode: "popup", auto_select: false });
     gsiReady = true;
