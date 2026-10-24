@@ -1,117 +1,121 @@
-# DocChat
+<p align="center">
+  <img src="static/og-image.png" alt="DocChat: chat with your documents" width="820">
+</p>
 
-Upload PDFs, Word files, notes or images and chat with them. Answers stream in live.
+<p align="center">
+  <b>Upload a PDF, Word file or notes and ask anything.</b><br>
+  DocChat reads your documents, summarizes them, and answers questions with sources.
+</p>
+
+<p align="center">
+  <a href="https://docchat-006c.onrender.com"><b>Live demo</b></a> ·
+  <a href="#features">Features</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#run-it-locally">Run it locally</a> ·
+  <a href="#deploy-for-free">Deploy</a>
+</p>
+
+---
 
 ## Features
 
-- **AI overview** of every upload: document type, summary, key topics and suggested questions
-- **Smart follow-ups**: three suggested next questions after every answer
-- **Quick actions**: Summarize, Key facts, Action items, Explain simply, Quiz me, Find risks, Compare documents
-- **Answer styles**: Concise, Balanced, Detailed, Simple
-- **Saved chats** (SQLite, `docchat.db`) with search, rename, delete and Markdown export
-- Copy, read aloud, regenerate, and stop buttons on answers
-- Drag and drop files anywhere; PDF, Word (.docx), text, Markdown, CSV and images
-- Five color themes (DocChat blue by default) plus light / dark / system mode
-- Works on desktop (3 panels) and phones (slide-out drawers)
-- Keyboard: `Ctrl+K` new chat, `/` focus the question box, `Esc` stop an answer
+**Smart**
+- **AI overview on upload:** document type, summary, key topics and four suggested questions
+- **Answers with sources:** answers cite the document and page (exact citations with Claude)
+- **"Ask next" suggestions:** three follow-up questions after every answer
+- **Quick actions:** Summarize, Key facts, Action items, Explain simply, Quiz me, Find risks, Compare documents
+- **Answer styles:** Concise, Balanced, Detailed, Simple
 
-Works with three AI providers. Pick one with the `PROVIDER` setting:
+**App**
+- **Sign in with Google** on a separate sign-up / log-in page; every account only sees its own chats
+- **Saved chats** with search, rename, delete and Markdown export
+- PDF, Word (.docx), text, Markdown, CSV and image uploads; drag and drop anywhere
+- Streaming answers with stop, regenerate, copy and read-aloud
+- Five color themes, light / dark / system mode, and a responsive layout (3 panels on desktop, drawers on mobile)
+- Public landing page with SEO basics (meta tags, share image, sitemap, robots.txt)
 
-| Provider | Cost | Key needed | Notes |
-|---|---|---|---|
-| `gemini` | Free tier | Yes, free | Reads PDFs natively (incl. tables/images). Daily request limits. |
-| `ollama` | Free | No | Runs on your PC, fully private and offline. Slower, weaker answers, text PDFs only. |
-| `claude` | Paid | Yes | Best answers, exact clickable citations with page numbers. |
+**Under the hood**
+- Pluggable AI providers: **Google Gemini** (free tier), **Ollama** (local and offline) or **Anthropic Claude**
+- Per-visitor privacy, optional daily question limits, upload size caps and a privacy policy page
 
-If `PROVIDER` isn't set, DocChat uses Gemini if a Gemini key is set, then Claude if a Claude key is set, otherwise Ollama.
+## Tech stack
 
-## Install (once)
-
-```
-python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
-```
-
-## Option A: Gemini (free, recommended)
-
-1. Get a free key at https://aistudio.google.com/apikey (sign in with Google -> Create API key).
-2. Run (PowerShell):
-   ```
-   $env:GEMINI_API_KEY = "your-key"
-   .venv\Scripts\python app.py
-   ```
-3. Open http://127.0.0.1:5000
-
-Default model: `gemini-3.5-flash-lite` (more free requests per day). For smarter answers with a smaller
-daily limit: `$env:GEMINI_MODEL = "gemini-3.8-flash"`. Note: on the free tier Google may use your
-prompts and documents to improve its products, so don't upload anything private.
-
-## Option B: Ollama (free, offline, private)
-
-1. Install Ollama from https://ollama.com and start it.
-2. Download a model (~2 GB): `ollama pull llama3.2:3b`
-3. Run:
-   ```
-   $env:PROVIDER = "ollama"
-   .venv\Scripts\python app.py
-   ```
-
-Settings: `OLLAMA_MODEL` (default `llama3.2:3b`; try `gemma3:4b` or `qwen3:4b` for better answers)
-and `OLLAMA_CONTEXT` (default 16384 tokens, about 40 pages of text; raise it if you have more RAM).
-
-## Option C: Claude (paid)
-
-```
-$env:PROVIDER = "claude"
-$env:ANTHROPIC_API_KEY = "sk-ant-..."
-.venv\Scripts\python app.py
-```
-
-## Deploy as a free website (Render)
-
-1. Push this folder to a GitHub repository (`.env` and the databases are git-ignored, so your key stays private).
-2. On https://render.com sign in with GitHub, then **New + > Blueprint** and pick the repository.
-   Render reads `render.yaml` and asks for `GEMINI_API_KEY`; paste your key there.
-3. You get a link like `https://docchat-xxxx.onrender.com`.
-
-In public mode (`DOCCHAT_PUBLIC=1`) every browser only sees its own chats, uploads are capped at 10 MB,
-and visitors see a "free demo" notice. Questions are unlimited by default; to protect your Gemini quota,
-set `DAILY_LIMIT` (per visitor) and/or `GLOBAL_DAILY_LIMIT` (whole site) in Render's Environment tab.
-On Render's free plan the site sleeps after ~15 minutes idle and saved chats reset on restart.
-
-## Sign in with Google
-
-Set `GOOGLE_CLIENT_ID` and DocChat requires a Google sign-in before anyone can upload or ask; each
-account only sees its own chats, on any device. Without it, there are no accounts (good for local use).
-
-1. https://console.cloud.google.com > create or pick a project.
-2. **Google Auth Platform > Branding**: app name DocChat, your email; **Audience**: External, then **Publish app**.
-3. **Clients > Create client > Web application**. Authorized JavaScript origins:
-   `https://docchat-006c.onrender.com`, `http://localhost:5000` and `http://localhost`.
-4. Copy the **Client ID** (it's public, not a secret) into `render.yaml` (`GOOGLE_CLIENT_ID`) and/or `.env`.
-
-Logins are signed with `SECRET_KEY` (Render generates it; locally it's stored in `.secret_key`).
-
-## Testing the UI without any AI
-
-`.venv\Scripts\python mock_server.py` runs the app on http://127.0.0.1:5001 with a fake AI that
-streams a sample answer. It uses its own `mock.db`, so it never touches your real chats.
+| Layer | Tech |
+|---|---|
+| Backend | Python, Flask, Gunicorn, SQLite |
+| AI | Google Gemini API (`google-genai`), Ollama, Anthropic Claude API |
+| Documents | pypdf, python-docx |
+| Auth | Google Identity Services, server-side ID token verification (`google-auth`), signed sessions |
+| Frontend | Vanilla JavaScript, HTML, CSS (no framework), server-sent events for streaming |
+| Hosting | Render (free web service via `render.yaml` Blueprint) |
 
 ## How it works
 
-- Files: `app.py` (server), `static/index.html` (layout), `static/style.css`, `static/app.js`
-  (page logic) and `static/theme.js` (color themes).
-- Chats, documents and messages live in SQLite (`docchat.db`). Delete that file to start fresh.
-- `POST /api/chats/<id>/upload` stores files; PDFs and Word files also get their text extracted
-  (with `--- Page N ---` markers) for word counts and the local model.
-- `POST /api/chats/<id>/insights` asks the AI for a JSON overview (title, type, summary, topics, questions).
-- `POST /api/chats/<id>/ask` rebuilds the conversation from the database and streams the answer as
-  server-sent events. The model ends each answer with `[[FOLLOWUPS]]` and three questions; the server
-  strips that part out and sends the questions separately.
-- Each provider is two functions in `app.py` (`*_stream` for answers, `*_json` for overviews).
+```
+Browser ──upload──▶ Flask ──▶ extract text (pypdf / python-docx) ──▶ SQLite
+   │                  │
+   │ ask a question   ├─ rebuild the conversation from SQLite (documents attached to the turn they were added)
+   │                  ├─ stream the answer from Gemini / Ollama / Claude
+   ◀── server-sent ───┘   (the model ends with [[FOLLOWUPS]]; the server strips that part and sends
+        events             the three follow-up questions separately)
+```
 
-## Ideas to extend it
+- `app.py`: the Flask server (routes, auth, database, and one `*_stream` / `*_json` function pair per AI provider)
+- `static/landing.html`, `login.html`, `index.html`, `privacy.html`: the public homepage, sign-in page, app and privacy policy
+- `static/app.js`, `style.css`, `theme.js`: app logic, styles and the color-theme engine
+- `mock_server.py`: runs the full UI with a fake AI, so you can work on the design without API calls
 
-- A dropdown in the page to switch providers live
-- For huge documents: split into chunks and retrieve only the relevant ones (RAG)
-- Highlight the cited passage inside a PDF viewer
+## Run it locally
+
+```bash
+git clone https://github.com/arronPhilip/docchat.git
+cd docchat
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt      # macOS/Linux: .venv/bin/pip
+```
+
+Create a `.env` file with a free Gemini key from https://aistudio.google.com/apikey:
+
+```
+GEMINI_API_KEY=your-key
+# Optional: require Google sign-in (see below)
+# GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+```
+
+```bash
+.venv\Scripts\python app.py
+```
+
+Open http://127.0.0.1:5000. Without `GOOGLE_CLIENT_ID` there are no accounts, which is handy for local use.
+
+**Other providers:** `PROVIDER=ollama` (install [Ollama](https://ollama.com), then `ollama pull llama3.2:3b`)
+or `PROVIDER=claude` with `ANTHROPIC_API_KEY`.
+
+**No AI at all:** `python mock_server.py` runs the UI on http://127.0.0.1:5001 with a fake AI and its own `mock.db`.
+
+## Deploy for free
+
+1. Push this repository to GitHub (`.env` and the databases are git-ignored).
+2. On [Render](https://render.com): **New > Blueprint** and pick the repository. `render.yaml` sets everything up;
+   paste your `GEMINI_API_KEY` when asked.
+
+| Setting | What it does |
+|---|---|
+| `DOCCHAT_PUBLIC=1` | Public mode: 10 MB uploads, demo notice, per-visitor privacy |
+| `GOOGLE_CLIENT_ID` | Turns on Sign in with Google (create an OAuth Web client in Google Cloud and add your site as an authorized JavaScript origin) |
+| `SECRET_KEY` | Signs the login cookie (Render generates it) |
+| `DAILY_LIMIT` / `GLOBAL_DAILY_LIMIT` | Optional daily caps per visitor / for the whole site (0 = unlimited) |
+| `GOOGLE_SITE_VERIFICATION` | Google Search Console ownership tag |
+
+On Render's free plan the site sleeps after about 15 minutes idle and saved chats reset on restart.
+
+## Privacy
+
+Documents are processed by the configured AI provider. On Gemini's free tier, Google may use content to
+improve its products, so the public demo asks users not to upload confidential files.
+See the [privacy policy](https://docchat-006c.onrender.com/privacy).
+
+## Author
+
+**Arron Philip**, Computer Science student at Manchester Metropolitan University
+[Portfolio](https://arronphilip.github.io/Portfolio/) · [GitHub](https://github.com/arronPhilip) · [LinkedIn](https://www.linkedin.com/in/arron-phlilp/)
