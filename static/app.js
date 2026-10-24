@@ -350,7 +350,7 @@ function renderSignIn() {
       <h2>Chat with any document,<br><em>get answers you can trust.</em></h2>
       <p>Sign in with your Google account to upload documents and ask questions. Your chats are private to your account.</p>
       <div class="gsi-slot" id="gsiButton"></div>
-      <span class="signin-note">We only use your name, email and profile picture.</span>
+      <span class="signin-note">We only use your name, email and profile picture. <a href="/privacy" style="color:var(--accent)">Privacy policy</a></span>
     </div>
     <p class="label section-label">How it works</p>
     <div class="steps">${STEPS.map(([t, d], i) => `<div class="step"><span class="num">${i + 1}</span><div><b>${t}</b><span>${d}</span></div></div>`).join("")}</div>

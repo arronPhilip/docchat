@@ -657,6 +657,11 @@ def index():
     return send_from_directory("static", "index.html")
 
 
+@app.get("/privacy")
+def privacy():
+    return send_from_directory("static", "privacy.html")
+
+
 @app.get("/api/config")
 def config():
     remaining = None

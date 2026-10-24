@@ -24,3 +24,5 @@ services:
         sync: false
       - key: SECRET_KEY           # signs the login cookie; Render generates a random one
         generateValue: true
+      - key: GOOGLE_CLIENT_ID     # "Sign in with Google" (public ID, not a secret); remove to turn login off
+        value: 198534459751-uf1jc0phsbpnran3itotk6883c4jed28.apps.googleusercontent.com
