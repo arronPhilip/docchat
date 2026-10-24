@@ -115,8 +115,6 @@ svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor;
 .user-card .u-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-card .u-email { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-card .icon-btn { width: 30px; height: 30px; }
-.gsi-slot { display: flex; justify-content: center; min-height: 44px; margin: 4px 0 6px; }
-.signin-note { display: block; font-size: 12px; color: var(--muted); margin-top: 8px; }
 .quota[hidden] { display: none; }
 .quota-text { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 .quota-text b { color: var(--text); font-weight: 600; }

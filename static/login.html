@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en" data-theme="ocean">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · DocChat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M16 4h17a3 3 0 0 1 3 3v34a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12z' fill='none' stroke='%232f73b5' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cellipse cx='34' cy='25' rx='12' ry='10' fill='%2322aab5' stroke='%23fff' stroke-width='2.5'/%3E%3Cpath d='M26 31l-3 7 8-4z' fill='%2322aab5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/theme.js"></script>
+<style>
+  body { overflow: auto; }
+  .auth { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; }
+
+  /* ---------- Brand side ---------- */
+  .brand-side {
+    position: relative; overflow: hidden; color: #fff; padding: 48px 56px; display: flex; flex-direction: column;
+    background: linear-gradient(150deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, var(--accent-2)) 55%, var(--accent-2) 100%);
+  }
+  .brand-side::before, .brand-side::after {
+    content: ""; position: absolute; border-radius: 50%; background: rgba(255,255,255,.08); pointer-events: none;
+  }
+  .brand-side::before { width: 520px; height: 520px; right: -180px; top: -160px; }
+  .brand-side::after { width: 380px; height: 380px; left: -140px; bottom: -120px; }
+  .brand-top { display: flex; align-items: center; gap: 12px; position: relative; }
+  .brand-top .mark { width: 46px; height: 46px; border-radius: 14px; background: rgba(255,255,255,.95); display: grid; place-items: center; }
+  .brand-top .mark svg { width: 34px; height: 34px; }
+  .brand-top .word { font-family: "Montserrat", sans-serif; font-size: 22px; letter-spacing: .02em; }
+  .brand-top .word b { font-weight: 800; }
+  .brand-mid { margin: auto 0; position: relative; max-width: 460px; padding: 40px 0; }
+  .brand-mid h1 { font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 40px; line-height: 1.12; margin: 0 0 14px; letter-spacing: -.01em; }
+  .brand-mid p { font-size: 16px; line-height: 1.6; opacity: .9; margin: 0 0 30px; }
+  .perks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+  .perks li { display: flex; gap: 14px; align-items: flex-start; }
+  .perks .p-icon { flex: none; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: rgba(255,255,255,.16); }
+  .perks .p-icon svg.i { width: 18px; height: 18px; }
+  .perks b { display: block; font-weight: 600; font-size: 14.5px; }
+  .perks span { font-size: 13px; opacity: .85; }
+  .preview { position: relative; margin-top: 34px; max-width: 420px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 18px; padding: 16px; backdrop-filter: blur(6px); }
+  .preview .q { margin-left: auto; width: fit-content; background: rgba(255,255,255,.95); color: #15304f; font-size: 13px; padding: 7px 12px; border-radius: 14px 14px 4px 14px; }
+  .preview .a { display: flex; gap: 10px; margin-top: 12px; font-size: 13px; line-height: 1.5; }
+  .preview .a .dot { flex: none; width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,.95); display: grid; place-items: center; }
+  .preview .a .dot svg { width: 20px; height: 20px; }
+  .preview .tag { display: inline-block; font-size: 11px; padding: 0 7px; border-radius: 99px; background: rgba(255,255,255,.22); }
+  .brand-foot { position: relative; font-size: 12.5px; opacity: .8; }
+
+  /* ---------- Form side ---------- */
+  .form-side { display: grid; place-items: center; padding: 40px 24px; }
+  .auth-card { width: min(420px, 100%); padding: 36px 34px 30px; text-align: center; }
+  .auth-card .mobile-logo { display: none; width: 56px; height: 56px; margin: 0 auto 14px; }
+  .auth-card h2 { font-family: var(--display); font-weight: var(--display-weight); font-size: 28px; margin: 0 0 8px; line-height: 1.2; }
+  .auth-card .lead { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 14px; background: var(--hover); margin-bottom: 26px; }
+  .tabs button { border: 0; background: transparent; border-radius: 11px; padding: 9px 0; font-size: 13.5px; font-weight: 500; color: var(--muted); }
+  .tabs button[aria-selected="true"] { background: var(--panel-solid); color: var(--text); box-shadow: 0 1px 4px color-mix(in srgb, var(--text) 12%, transparent); }
+  .gsi { display: flex; justify-content: center; min-height: 44px; }
+  .gsi .error { font-size: 13px; text-align: left; }
+  .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; margin: 24px 0 18px; }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .trust { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+  .trust li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: color-mix(in srgb, var(--text) 85%, var(--muted)); }
+  .trust svg.i { width: 16px; height: 16px; color: var(--accent); }
+  .switch-note { margin: 22px 0 0; font-size: 13px; color: var(--muted); }
+  .switch-note button { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; font-size: 13px; }
+  .legal { margin-top: 18px; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .legal a { color: var(--accent); }
+  .status { min-height: 20px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .status.err { color: var(--error); }
+
+  @media (max-width: 920px) {
+    .auth { grid-template-columns: 1fr; }
+    .brand-side { display: none; }
+    .auth-card .mobile-logo { display: block; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 48 48">
+    <g style="fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round">
+      <path d="M16 4h17a3 3 0 0 1 3 3v34a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12z"/>
+      <path d="M16 4v6a2 2 0 0 1-2 2H8"/>
+    </g>
+    <path style="fill:none;stroke:color-mix(in srgb, var(--accent-2) 35%, var(--accent-soft));stroke-width:4;stroke-linecap:round" d="M12.5 40a17 17 0 0 1 11-15"/>
+    <ellipse style="fill:var(--accent-2);stroke:#fff;stroke-width:2.5" cx="34" cy="25" rx="12.5" ry="10.5"/>
+    <path style="fill:var(--accent-2)" d="M26 31l-3.5 7.5 9-4.5z"/>
+    <g style="fill:#fff"><circle cx="29.5" cy="25" r="1.7"/><circle cx="34" cy="25" r="1.7"/><circle cx="38.5" cy="25" r="1.7"/></g>
+  </symbol>
+</svg>
+
+<div class="auth">
+  <!-- Brand side -->
+  <section class="brand-side" aria-hidden="true">
+    <div class="brand-top">
+      <span class="mark"><svg><use href="#logo"/></svg></span>
+      <span class="word"><b>DOC</b>CHAT</span>
+    </div>
+    <div class="brand-mid">
+      <h1>Your documents,<br>now answer back.</h1>
+      <p>Upload a PDF, Word file or notes and ask anything. DocChat reads it, summarizes it and answers with sources.</p>
+      <ul class="perks">
+        <li><span class="p-icon" data-icon="sparkles"></span><div><b>Instant overview</b><span>A summary, key topics and smart questions on upload.</span></div></li>
+        <li><span class="p-icon" data-icon="quote"></span><div><b>Answers with sources</b><span>See exactly which document and page each answer comes from.</span></div></li>
+        <li><span class="p-icon" data-icon="lock"></span><div><b>Private to you</b><span>Your chats are tied to your account and visible only to you.</span></div></li>
+      </ul>
+      <div class="preview">
+        <div class="q">How long is the refund window?</div>
+        <div class="a"><span class="dot"><svg><use href="#logo"/></svg></span><div>Refunds are allowed within <b>30 days</b> of purchase <span class="tag">policy.pdf, p. 2</span></div></div>
+      </div>
+    </div>
+    <div class="brand-foot">Upload &nbsp;|&nbsp; Converse &nbsp;|&nbsp; Know</div>
+  </section>
+
+  <!-- Form side -->
+  <main class="form-side">
+    <div class="auth-card card">
+      <svg class="mobile-logo" aria-hidden="true"><use href="#logo"/></svg>
+      <h2 id="heading">Welcome back</h2>
+      <p class="lead" id="lead">Log in to pick up your chats where you left off.</p>
+
+      <div class="tabs" role="tablist" aria-label="Log in or sign up">
+        <button role="tab" id="tabLogin" aria-selected="true">Log in</button>
+        <button role="tab" id="tabSignup" aria-selected="false">Sign up</button>
+      </div>
+
+      <div class="gsi" id="gsiButton"></div>
+      <div class="status" id="status" role="status"></div>
+
+      <div class="divider">Why Google sign-in?</div>
+      <ul class="trust">
+        <li><span data-icon="check"></span>No new password to remember</li>
+        <li><span data-icon="shield"></span>We only see your name, email and photo</li>
+        <li><span data-icon="layers"></span>Your chats follow you to any device</li>
+      </ul>
+
+      <p class="switch-note" id="switchNote">New to DocChat? <button id="switchBtn">Create an account</button></p>
+      <p class="legal">By continuing you agree to DocChat's use of your data as described in the <a href="/privacy">privacy policy</a>.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+const ICONS = {
+  sparkles: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  quote: '<path d="M3 21c3 0 7-1 7-8V5H3v7h4c0 3-1 5-4 5zM14 21c3 0 7-1 7-8V5h-7v7h4c0 3-1 5-4 5z"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  layers: '<path d="M12 2 2 7l10 5 10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
+};
+document.querySelectorAll("[data-icon]").forEach(el => {
+  el.innerHTML = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[el.dataset.icon]}</svg>`;
+});
+
+const $ = s => document.querySelector(s);
+const status = $("#status");
+let mode = new URLSearchParams(location.search).get("mode") === "signup" ? "signup" : "login";
+let clientId = null;
+
+const COPY = {
+  login: { heading: "Welcome back", lead: "Log in to pick up your chats where you left off.", text: "signin_with",
+           note: "New to DocChat?", sw: "Create an account" },
+  signup: { heading: "Create your account", lead: "Start chatting with your documents in seconds. It's free.", text: "signup_with",
+            note: "Already have an account?", sw: "Log in" },
+};
+
+function setMode(m) {
+  mode = m;
+  const c = COPY[m];
+  $("#heading").textContent = c.heading;
+  $("#lead").textContent = c.lead;
+  $("#tabLogin").setAttribute("aria-selected", String(m === "login"));
+  $("#tabSignup").setAttribute("aria-selected", String(m === "signup"));
+  $("#switchNote").firstChild.textContent = c.note + " ";
+  $("#switchBtn").textContent = c.sw;
+  history.replaceState(null, "", m === "signup" ? "/login?mode=signup" : "/login");
+  renderButton();
+}
+
+function renderButton() {
+  if (!window.google?.accounts?.id || !clientId) return;
+  const slot = $("#gsiButton");
+  slot.innerHTML = "";
+  google.accounts.id.renderButton(slot, {
+    theme: document.documentElement.dataset.mode === "dark" ? "filled_black" : "outline",
+    size: "large", shape: "pill", text: COPY[mode].text, logo_alignment: "left",
+    width: Math.min(340, slot.clientWidth || 340),
+  });
+}
+
+async function onCredential(resp) {
+  status.className = "status"; status.textContent = "Signing you in…";
+  try {
+    const r = await fetch("/api/auth/google", { method: "POST", headers: { "Content-Type": "application/json" },
+                                               body: JSON.stringify({ credential: resp.credential }) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Sign-in failed. Please try again.");
+    status.textContent = `Welcome, ${data.user.name}! Opening DocChat…`;
+    location.replace("/");
+  } catch (e) {
+    status.className = "status err";
+    status.textContent = e.message.includes("fetch") ? "Can't reach DocChat right now. Please try again." : e.message;
+  }
+}
+
+async function init() {
+  $("#tabLogin").onclick = () => setMode("login");
+  $("#tabSignup").onclick = () => setMode("signup");
+  $("#switchBtn").onclick = () => setMode(mode === "login" ? "signup" : "login");
+  setMode(mode);
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    if (cfg.user) return location.replace("/");
+    if (!cfg.auth) return location.replace("/");
+    clientId = cfg.google_client_id;
+  } catch (e) {
+    status.className = "status err"; status.textContent = "Can't reach DocChat right now. Please reload the page.";
+    return;
+  }
+  const s = document.createElement("script");
+  s.src = "https://accounts.google.com/gsi/client"; s.async = true;
+  s.onload = () => {
+    google.accounts.id.initialize({ client_id: clientId, callback: onCredential, ux_mode: "popup", auto_select: false });
+    renderButton();
+  };
+  s.onerror = () => {
+    $("#gsiButton").innerHTML = `<p class="error">Couldn't load Google sign-in. If you use an ad or tracker blocker, allow accounts.google.com on this site, then reload.</p>`;
+  };
+  document.head.appendChild(s);
+  addEventListener("resize", () => { clearTimeout(window.__rb); window.__rb = setTimeout(renderButton, 200); });
+}
+init();
+</script>
+</body>
+</html>

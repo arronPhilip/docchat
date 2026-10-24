@@ -19,7 +19,7 @@ import sqlite3
 import time
 import uuid
 
-from flask import Flask, Response, g, jsonify, request, send_from_directory, session, stream_with_context
+from flask import Flask, Response, g, jsonify, redirect, request, send_from_directory, session, stream_with_context
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -148,7 +148,7 @@ def finish_response(resp):
         resp.set_cookie(OWNER_COOKIE, g.guest, max_age=60 * 60 * 24 * 365, httponly=True,
                         samesite="Lax", secure=request.is_secure)
     # Make the browser re-check the page and its scripts every time, so an update is never hidden by an old cached copy
-    if request.path == "/" or request.path.startswith("/static/"):
+    if request.path in ("/", "/login", "/privacy") or request.path.startswith("/static/"):
         resp.headers["Cache-Control"] = "no-cache"
     return resp
 
@@ -654,7 +654,17 @@ def error(msg, code=400):
 
 @app.get("/")
 def index():
+    if AUTH_ENABLED and not g.user:
+        return redirect("/login")
     return send_from_directory("static", "index.html")
+
+
+@app.get("/login")
+def login_page():
+    """Separate sign-up / log-in page; signed-in visitors go straight to the app."""
+    if not AUTH_ENABLED or g.user:
+        return redirect("/")
+    return send_from_directory("static", "login.html")
 
 
 @app.get("/privacy")

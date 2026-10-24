@@ -314,7 +314,7 @@ function renderHeader() {
 function renderLog() {
   log.innerHTML = "";
   const c = state.chat;
-  if (needsSignIn()) return renderSignIn();
+  if (needsSignIn()) return;
   if (!c.docs.length && !c.messages.length) return renderWelcome();
   if (!c.messages.length) return renderReady();
   c.messages.forEach((m, i) => {
@@ -343,76 +343,15 @@ function renderWelcome() {
   $("[data-act=upload]", log).onclick = () => $("#file").click();
 }
 
-function renderSignIn() {
-  log.innerHTML = `<div class="welcome">
-    <div class="hero">
-      <svg class="logo" aria-hidden="true"><use href="#logo"/></svg>
-      <h2>Chat with any document,<br><em>get answers you can trust.</em></h2>
-      <p>Sign in with your Google account to upload documents and ask questions. Your chats are private to your account.</p>
-      <div class="gsi-slot" id="gsiButton"></div>
-      <span class="signin-note">We only use your name, email and profile picture. <a href="/privacy" style="color:var(--accent)">Privacy policy</a></span>
-    </div>
-    <p class="label section-label">How it works</p>
-    <div class="steps">${STEPS.map(([t, d], i) => `<div class="step"><span class="num">${i + 1}</span><div><b>${t}</b><span>${d}</span></div></div>`).join("")}</div>
-    <p class="label section-label">What you can do</p>
-    <div class="features">${FEATURES.map(([ic, t, d]) => `<div class="feature"><span class="f-icon">${icon(ic)}</span><b>${t}</b><span>${d}</span></div>`).join("")}</div>
-  </div>`;
-  mountGoogleButton();
-}
-
-let gsiLoading = null;
-function loadGoogleScript() {
-  if (window.google?.accounts?.id) return Promise.resolve();
-  if (!gsiLoading) gsiLoading = new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = "https://accounts.google.com/gsi/client"; s.async = true;
-    s.onload = resolve; s.onerror = () => { gsiLoading = null; reject(new Error("Couldn't load Google sign-in")); };
-    document.head.appendChild(s);
-  });
-  return gsiLoading;
-}
-
-let gsiReady = false;
-async function mountGoogleButton() {
-  const slot = $("#gsiButton");
-  if (!slot) return;
-  try { await loadGoogleScript(); }
-  catch (e) { slot.innerHTML = `<p class="error">Couldn't load Google sign-in. If you use an ad or tracker blocker, allow accounts.google.com on this site, then reload.</p>`; return; }
-  if (!gsiReady) {
-    google.accounts.id.initialize({ client_id: state.config.google_client_id, callback: onGoogleCredential, ux_mode: "popup", auto_select: false });
-    gsiReady = true;
-  }
-  google.accounts.id.renderButton(slot, {
-    theme: document.documentElement.dataset.mode === "dark" ? "filled_black" : "outline",
-    size: "large", shape: "pill", text: "continue_with", logo_alignment: "left", width: 280,
-  });
-}
-
-async function onGoogleCredential(resp) {
-  try {
-    const r = await api("/api/auth/google", { method: "POST", json: { credential: resp.credential } });
-    state.config.user = r.user;
-    renderUser();
-    toast(`Signed in as ${r.user.name}`);
-    await loadChats();
-    if (state.chats.length) await openChat(state.chats[0].id); else newChat();
-  } catch (e) { toast(e.message, 5000); }
-}
-
 function needsSignIn() { return !!state.config.auth && !state.config.user; }
 
 function signedOut() {
-  if (!state.config.auth) return;
-  state.config.user = null; state.chats = []; state.chatId = null;
-  state.chat = { title: "New chat", docs: [], messages: [], insights: null };
-  renderUser(); renderAll();
+  if (state.config.auth) location.replace("/login");  // login expired or missing: back to the sign-in page
 }
 
 async function signOut() {
   try { await api("/api/auth/logout", { method: "POST" }); } catch (e) {}
-  try { window.google?.accounts?.id.disableAutoSelect(); } catch (e) {}
-  signedOut();
-  toast("Signed out");
+  location.replace("/login");
 }
 
 function renderUser() {
@@ -772,7 +711,7 @@ async function init() {
     $("#providerName").textContent = state.config.label;
     $("#providerName").title = state.config.label;
   } catch (e) { $("#providerName").textContent = "Server not reachable"; }
-  if (needsSignIn()) { renderAll(); addEventListener("resize", () => updateComposer()); return; }
+  if (needsSignIn()) return signedOut();
   await loadChats();
   if (state.chats.length) await openChat(state.chats[0].id);
   else renderAll();
