@@ -61,6 +61,9 @@ MAX_UPLOAD_BYTES = (10 if PUBLIC else 30) * 1024 * 1024  # per chat
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
 AUTH_ENABLED = bool(GOOGLE_CLIENT_ID)
 
+# Search engines: the token from Google Search Console's "HTML tag" verification (just the content="..." value)
+GOOGLE_SITE_VERIFICATION = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
+
 
 def load_secret_key():
     """Signs the login cookie. On the host it comes from SECRET_KEY; locally it's kept in .secret_key."""
@@ -652,11 +655,40 @@ def error(msg, code=400):
     return jsonify({"error": msg}), code
 
 
+def base_url():
+    return request.url_root.rstrip("/")
+
+
 @app.get("/")
 def index():
     if AUTH_ENABLED and not g.user:
-        return redirect("/login")
+        return landing()
     return send_from_directory("static", "index.html")
+
+
+def landing():
+    """Public homepage for signed-out visitors (and search engines)."""
+    with open(os.path.join(app.static_folder, "landing.html"), encoding="utf-8") as f:
+        html = f.read()
+    verify = (f'<meta name="google-site-verification" content="{GOOGLE_SITE_VERIFICATION}">'
+              if re.fullmatch(r"[\w-]{10,100}", GOOGLE_SITE_VERIFICATION) else "")
+    html = html.replace("__BASE_URL__", base_url()).replace("__VERIFICATION_META__", verify)
+    return Response(html, mimetype="text/html")
+
+
+@app.get("/robots.txt")
+def robots():
+    return Response(f"User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: {base_url()}/sitemap.xml\n",
+                    mimetype="text/plain")
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    pages = [("/", "1.0"), ("/login", "0.5"), ("/privacy", "0.3")]
+    urls = "".join(f"<url><loc>{base_url()}{path}</loc><priority>{prio}</priority></url>" for path, prio in pages)
+    return Response(f'<?xml version="1.0" encoding="UTF-8"?>'
+                    f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>',
+                    mimetype="application/xml")
 
 
 @app.get("/login")

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en" data-theme="ocean">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DocChat: Chat with your PDFs and documents using AI</title>
+<meta name="description" content="DocChat is a free AI document assistant. Upload a PDF, Word file or notes and ask questions in plain English. Get instant summaries, key facts and answers with sources.">
+<link rel="canonical" href="__BASE_URL__/">
+__VERIFICATION_META__
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DocChat">
+<meta property="og:title" content="DocChat: Chat with your PDFs and documents using AI">
+<meta property="og:description" content="Upload a PDF, Word file or notes and ask anything. Instant summaries, key facts and answers with sources. Free.">
+<meta property="og:url" content="__BASE_URL__/">
+<meta property="og:image" content="__BASE_URL__/static/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DocChat: Chat with your PDFs and documents using AI">
+<meta name="twitter:description" content="Upload a document and ask anything. Instant summaries and answers with sources.">
+<meta name="twitter:image" content="__BASE_URL__/static/og-image.png">
+<meta name="theme-color" content="#2f73b5">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebApplication", "name": "DocChat", "url": "__BASE_URL__/",
+ "applicationCategory": "ProductivityApplication", "operatingSystem": "Any (web browser)",
+ "description": "Free AI document assistant: upload PDFs, Word files or notes and ask questions to get summaries, key facts and answers with sources.",
+ "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M16 4h17a3 3 0 0 1 3 3v34a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12z' fill='none' stroke='%232f73b5' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cellipse cx='34' cy='25' rx='12' ry='10' fill='%2322aab5' stroke='%23fff' stroke-width='2.5'/%3E%3Cpath d='M26 31l-3 7 8-4z' fill='%2322aab5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/theme.js"></script>
+<style>
+  body { overflow: auto; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; text-decoration: none; }
+  .btn-lg { padding: 13px 24px; font-size: 15px; border-radius: 14px; }
+
+  /* nav */
+  .nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+         background: color-mix(in srgb, var(--bg) 75%, transparent); border-bottom: 1px solid var(--border); }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; }
+  .nav-brand .logo { width: 36px; height: 36px; }
+  .nav-brand .word { font-family: "Montserrat", sans-serif; font-size: 19px; letter-spacing: .02em; }
+  .nav-brand .word b { font-weight: 800; }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; color: var(--muted); }
+  .nav-links a:hover { color: var(--text); }
+  .nav-actions { display: flex; gap: 10px; }
+
+  /* hero */
+  .hero-sec { padding: 80px 0 40px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--accent);
+          background: var(--accent-soft); padding: 6px 14px; border-radius: 999px; margin-bottom: 20px; }
+  .pill svg.i { width: 14px; height: 14px; }
+  .hero-sec h1 { font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 52px; line-height: 1.08; letter-spacing: -.02em; margin: 0 0 18px; }
+  .hero-sec h1 em { font-style: normal; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero-sec .sub { font-size: 18px; line-height: 1.6; color: var(--muted); margin: 0 0 30px; max-width: 520px; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .hero-ctas .btn.primary { box-shadow: 0 8px 22px var(--accent-glow); }
+  .hero-note { margin-top: 16px; font-size: 13px; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; }
+  .hero-note span { display: inline-flex; align-items: center; gap: 6px; }
+  .hero-note svg.i { width: 15px; height: 15px; color: var(--accent); }
+
+  /* abstract product mock (no example content) */
+  .mock { padding: 14px; border-radius: 24px; }
+  .mock-inner { display: grid; grid-template-columns: 120px 1fr; gap: 12px; height: 360px; }
+  .mock-side, .mock-main { background: var(--panel-solid); border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .bar { height: 9px; border-radius: 6px; background: var(--hover); }
+  .bar.accent { background: var(--accent-soft); }
+  .mock-doc { display: flex; align-items: center; gap: 8px; }
+  .mock-doc i { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); flex: none; }
+  .m-user { align-self: flex-end; width: 55%; height: 30px; border-radius: 14px 14px 4px 14px; background: var(--text); opacity: .9; }
+  .m-bot { display: flex; gap: 10px; }
+  .m-bot .av { flex: none; width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  .m-bot .lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .m-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; width: fit-content; }
+  .m-chip svg.i { width: 12px; height: 12px; }
+  .m-input { margin-top: auto; height: 38px; border-radius: 12px; border: 1px solid var(--accent); display: flex; justify-content: flex-end; align-items: center; padding: 4px; }
+  .m-input span { width: 28px; height: 28px; border-radius: 9px; background: var(--accent); }
+
+  /* sections */
+  section.block { padding: 70px 0; }
+  .sec-head { text-align: center; max-width: 640px; margin: 0 auto 40px; }
+  .sec-head h2 { font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 34px; margin: 0 0 12px; letter-spacing: -.01em; }
+  .sec-head p { color: var(--muted); font-size: 16px; margin: 0; line-height: 1.6; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .tile { padding: 24px; border-radius: 20px; }
+  .tile .t-icon { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); margin-bottom: 14px; }
+  .tile .t-icon svg.i { width: 21px; height: 21px; }
+  .tile h3 { margin: 0 0 6px; font-size: 16px; }
+  .tile p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+  .steps3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
+  .step3 { padding: 26px; border-radius: 20px; position: relative; }
+  .step3 .n { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: var(--accent-text);
+              background: linear-gradient(135deg, var(--accent), var(--accent-2)); margin-bottom: 14px; font-family: "Montserrat", sans-serif; }
+  .step3 h3 { margin: 0 0 6px; font-size: 16px; }
+  .step3 p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+  .who { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .who .tile h3 { font-size: 15px; }
+  .faq { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+  .faq details { border-radius: 16px; padding: 18px 22px; }
+  .faq summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; color: var(--accent); font-size: 20px; line-height: 1; }
+  .faq details[open] summary::after { content: "\2212"; }
+  .faq p { margin: 10px 0 0; color: var(--muted); line-height: 1.6; font-size: 14.5px; }
+  .cta-band { margin: 20px 0 80px; padding: 48px; border-radius: 28px; text-align: center; color: #fff;
+              background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  .cta-band h2 { font-family: "Montserrat", sans-serif; font-weight: 800; font-size: 32px; margin: 0 0 10px; }
+  .cta-band p { margin: 0 0 24px; opacity: .9; }
+  .cta-band .btn { background: #fff; color: #15304f; border-color: #fff; font-weight: 600; }
+  .cta-band .btn:hover { color: #15304f; filter: brightness(.96); }
+  footer { border-top: 1px solid var(--border); padding: 28px 0 40px; color: var(--muted); font-size: 13px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer a:hover { color: var(--text); }
+
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .mock { max-width: 560px; }
+    .grid3, .steps3 { grid-template-columns: 1fr 1fr; }
+    .who { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 600px) {
+    .hero-sec { padding: 44px 0 20px; }
+    .hero-sec h1 { font-size: 36px; }
+    .grid3, .steps3, .who { grid-template-columns: 1fr; }
+    .mock-inner { grid-template-columns: 1fr; height: 300px; }
+    .mock-side { display: none; }
+    .nav .btn:not(.primary) { display: none; }
+    .cta-band { padding: 32px 20px; }
+    .sec-head h2 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 48 48">
+    <g style="fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round">
+      <path d="M16 4h17a3 3 0 0 1 3 3v34a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12z"/>
+      <path d="M16 4v6a2 2 0 0 1-2 2H8"/>
+    </g>
+    <path style="fill:none;stroke:color-mix(in srgb, var(--accent-2) 35%, var(--accent-soft));stroke-width:4;stroke-linecap:round" d="M12.5 40a17 17 0 0 1 11-15"/>
+    <ellipse style="fill:var(--accent-2);stroke:var(--panel-solid);stroke-width:2.5" cx="34" cy="25" rx="12.5" ry="10.5"/>
+    <path style="fill:var(--accent-2)" d="M26 31l-3.5 7.5 9-4.5z"/>
+    <g style="fill:#fff"><circle cx="29.5" cy="25" r="1.7"/><circle cx="34" cy="25" r="1.7"/><circle cx="38.5" cy="25" r="1.7"/></g>
+  </symbol>
+</svg>
+
+<header class="nav">
+  <div class="wrap">
+    <a href="/" class="nav-brand" aria-label="DocChat home">
+      <svg class="logo" aria-hidden="true"><use href="#logo"/></svg>
+      <span class="word"><b>DOC</b>CHAT</span>
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn" href="/login">Log in</a>
+      <a class="btn primary" href="/login?mode=signup">Get started free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero-sec">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="pill"><span data-icon="sparkles"></span>Free AI document assistant</span>
+        <h1>Chat with your documents. <em>Get answers you can trust.</em></h1>
+        <p class="sub">Upload a PDF, Word file or notes and ask anything in plain English. DocChat reads it for you,
+          summarizes it in seconds and answers with the exact source.</p>
+        <div class="hero-ctas">
+          <a class="btn primary btn-lg" href="/login?mode=signup">Start for free</a>
+          <a class="btn btn-lg" href="#how">See how it works</a>
+        </div>
+        <div class="hero-note">
+          <span><span data-icon="check"></span>Free to use</span>
+          <span><span data-icon="check"></span>Sign in with Google</span>
+          <span><span data-icon="check"></span>Private chats</span>
+        </div>
+      </div>
+      <div class="mock card" aria-hidden="true">
+        <div class="mock-inner">
+          <div class="mock-side">
+            <div class="bar accent" style="width:80%"></div>
+            <div class="mock-doc"><i></i><div class="bar" style="flex:1"></div></div>
+            <div class="mock-doc"><i></i><div class="bar" style="flex:1"></div></div>
+            <div class="mock-doc"><i></i><div class="bar" style="flex:1"></div></div>
+          </div>
+          <div class="mock-main">
+            <span class="m-chip"><span data-icon="sparkles"></span>AI overview</span>
+            <div class="bar" style="width:92%"></div><div class="bar" style="width:70%"></div>
+            <div class="m-user"></div>
+            <div class="m-bot"><span class="av"></span><div class="lines">
+              <div class="bar" style="width:95%"></div><div class="bar" style="width:80%"></div><div class="bar" style="width:60%"></div>
+              <span class="m-chip"><span data-icon="quote"></span>Source, page 4</span>
+            </div></div>
+            <div class="m-input"><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Everything you need to understand a document fast</h2>
+        <p>Stop scrolling through long PDFs. Ask DocChat and get to the point.</p>
+      </div>
+      <div class="grid3">
+        <div class="tile card"><span class="t-icon" data-icon="sparkles"></span><h3>Instant AI overview</h3><p>Every upload gets a summary, its key topics and suggested questions, automatically.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="quote"></span><h3>Answers with sources</h3><p>Each answer points back to the document and page it came from, so you can check it.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="list"></span><h3>One-click actions</h3><p>Summarize, pull out key facts, list action items, find risks or quiz yourself.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="columns"></span><h3>Compare documents</h3><p>Upload several files and see how they agree, differ or contradict each other.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="sliders"></span><h3>Answer styles</h3><p>Choose concise, balanced, detailed or simple explanations for any question.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="file"></span><h3>Many file types</h3><p>Works with PDF, Word (.docx), text, Markdown, CSV and images.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>How it works</h2>
+        <p>Three steps, no setup, no password.</p>
+      </div>
+      <div class="steps3">
+        <div class="step3 card"><span class="n">1</span><h3>Upload</h3><p>Sign in with Google and drop in a PDF, Word document, notes or an image.</p></div>
+        <div class="step3 card"><span class="n">2</span><h3>Converse</h3><p>Ask questions in your own words, or tap one of the questions DocChat suggests.</p></div>
+        <div class="step3 card"><span class="n">3</span><h3>Know</h3><p>Get clear answers with sources, follow-up ideas, and export the chat when you're done.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Made for anyone who reads a lot</h2>
+        <p>If it's long, dense or important, DocChat helps you understand it faster.</p>
+      </div>
+      <div class="who">
+        <div class="tile card"><span class="t-icon" data-icon="bulb"></span><h3>Students</h3><p>Summarize lecture notes and papers, then quiz yourself before exams.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="checklist"></span><h3>Professionals</h3><p>Pull deadlines, obligations and action items out of reports and contracts.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="search"></span><h3>Researchers</h3><p>Find the key findings and compare several papers side by side.</p></div>
+        <div class="tile card"><span class="t-icon" data-icon="message"></span><h3>Everyone</h3><p>Make sense of manuals, letters and forms by just asking questions.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="faq">
+    <div class="wrap">
+      <div class="sec-head"><h2>Frequently asked questions</h2></div>
+      <div class="faq">
+        <details class="card"><summary>Is DocChat free?</summary><p>Yes. DocChat is free to use. You just sign in with your Google account.</p></details>
+        <details class="card"><summary>What files can I upload?</summary><p>PDF, Word (.docx), plain text, Markdown, CSV and images (PNG, JPG, WebP), up to 10 MB per chat.</p></details>
+        <details class="card"><summary>Can other people see my documents?</summary><p>No. Your chats and files are tied to your account and only you can see them. You can delete any chat at any time. See the <a href="/privacy" style="color:var(--accent)">privacy policy</a>.</p></details>
+        <details class="card"><summary>How does DocChat answer questions?</summary><p>DocChat uses Google's Gemini AI to read your document and answer based on its content, with references to where the answer came from.</p></details>
+        <details class="card"><summary>Should I upload confidential documents?</summary><p>Please don't. DocChat is a free service and is not designed for confidential or sensitive material.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Ready to chat with your documents?</h2>
+      <p>Sign up with Google in one click. It's free.</p>
+      <a class="btn btn-lg" href="/login?mode=signup">Get started free</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 DocChat · Upload | Converse | Know</span>
+    <span><a href="/privacy">Privacy policy</a> &nbsp;·&nbsp; <a href="/login">Log in</a></span>
+  </div>
+</footer>
+
+<script>
+const ICONS = {
+  sparkles: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  quote: '<path d="M3 21c3 0 7-1 7-8V5H3v7h4c0 3-1 5-4 5zM14 21c3 0 7-1 7-8V5h-7v7h4c0 3-1 5-4 5z"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  columns: '<path d="M12 3v18M3 6h6M3 12h6M3 18h6M15 6h6M15 12h6M15 18h6"/>',
+  sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  bulb: '<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/>',
+  checklist: '<path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  message: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+};
+document.querySelectorAll("[data-icon]").forEach(el => {
+  el.innerHTML = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[el.dataset.icon] || ""}</svg>`;
+});
+</script>
+</body>
+</html>
