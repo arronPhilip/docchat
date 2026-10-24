@@ -38,12 +38,6 @@
   .perks .p-icon svg.i { width: 18px; height: 18px; }
   .perks b { display: block; font-weight: 600; font-size: 14.5px; }
   .perks span { font-size: 13px; opacity: .85; }
-  .preview { position: relative; margin-top: 34px; max-width: 420px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 18px; padding: 16px; backdrop-filter: blur(6px); }
-  .preview .q { margin-left: auto; width: fit-content; background: rgba(255,255,255,.95); color: #15304f; font-size: 13px; padding: 7px 12px; border-radius: 14px 14px 4px 14px; }
-  .preview .a { display: flex; gap: 10px; margin-top: 12px; font-size: 13px; line-height: 1.5; }
-  .preview .a .dot { flex: none; width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,.95); display: grid; place-items: center; }
-  .preview .a .dot svg { width: 20px; height: 20px; }
-  .preview .tag { display: inline-block; font-size: 11px; padding: 0 7px; border-radius: 99px; background: rgba(255,255,255,.22); }
   .brand-foot { position: relative; font-size: 12.5px; opacity: .8; }
 
   /* ---------- Form side ---------- */
@@ -56,6 +50,8 @@
   .tabs button { border: 0; background: transparent; border-radius: 11px; padding: 9px 0; font-size: 13.5px; font-weight: 500; color: var(--muted); }
   .tabs button[aria-selected="true"] { background: var(--panel-solid); color: var(--text); box-shadow: 0 1px 4px color-mix(in srgb, var(--text) 12%, transparent); }
   .gsi { display: flex; justify-content: center; min-height: 44px; }
+  /* Google's button lives in an iframe; matching its color scheme keeps the corners transparent (no white box) */
+  .gsi iframe { color-scheme: light; background: transparent !important; }
   .gsi .error { font-size: 13px; text-align: left; }
   .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; margin: 24px 0 18px; }
   .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
@@ -105,10 +101,6 @@
         <li><span class="p-icon" data-icon="quote"></span><div><b>Answers with sources</b><span>See exactly which document and page each answer comes from.</span></div></li>
         <li><span class="p-icon" data-icon="lock"></span><div><b>Private to you</b><span>Your chats are tied to your account and visible only to you.</span></div></li>
       </ul>
-      <div class="preview">
-        <div class="q">How long is the refund window?</div>
-        <div class="a"><span class="dot"><svg><use href="#logo"/></svg></span><div>Refunds are allowed within <b>30 days</b> of purchase <span class="tag">policy.pdf, p. 2</span></div></div>
-      </div>
     </div>
     <div class="brand-foot">Upload &nbsp;|&nbsp; Converse &nbsp;|&nbsp; Know</div>
   </section>
