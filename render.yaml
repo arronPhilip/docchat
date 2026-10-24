@@ -22,3 +22,5 @@ services:
         value: "0"
       - key: GEMINI_API_KEY       # you paste this in Render's dashboard; it is never stored in the code
         sync: false
+      - key: SECRET_KEY           # signs the login cookie; Render generates a random one
+        generateValue: true

@@ -13,6 +13,8 @@ import time
 os.environ["DOCCHAT_DB"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mock.db")
 if "--public" in sys.argv:
     os.environ["DOCCHAT_PUBLIC"] = "1"
+if "--auth" in sys.argv:  # show the sign-in screen (uses GOOGLE_CLIENT_ID from .env if set)
+    os.environ.setdefault("GOOGLE_CLIENT_ID", "preview.apps.googleusercontent.com")
 import app as docchat  # noqa: E402  (must come after DOCCHAT_DB is set)
 
 SAMPLE = """Here's a summary of the **refund policy**:

@@ -79,6 +79,19 @@ and visitors see a "free demo" notice. Questions are unlimited by default; to pr
 set `DAILY_LIMIT` (per visitor) and/or `GLOBAL_DAILY_LIMIT` (whole site) in Render's Environment tab.
 On Render's free plan the site sleeps after ~15 minutes idle and saved chats reset on restart.
 
+## Sign in with Google
+
+Set `GOOGLE_CLIENT_ID` and DocChat requires a Google sign-in before anyone can upload or ask; each
+account only sees its own chats, on any device. Without it, there are no accounts (good for local use).
+
+1. https://console.cloud.google.com > create or pick a project.
+2. **Google Auth Platform > Branding**: app name DocChat, your email; **Audience**: External, then **Publish app**.
+3. **Clients > Create client > Web application**. Authorized JavaScript origins:
+   `https://docchat-006c.onrender.com`, `http://localhost:5000` and `http://localhost`.
+4. Copy the **Client ID** (it's public, not a secret) into `render.yaml` (`GOOGLE_CLIENT_ID`) and/or `.env`.
+
+Logins are signed with `SECRET_KEY` (Render generates it; locally it's stored in `.secret_key`).
+
 ## Testing the UI without any AI
 
 `.venv\Scripts\python mock_server.py` runs the app on http://127.0.0.1:5001 with a fake AI that

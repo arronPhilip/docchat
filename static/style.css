@@ -106,6 +106,17 @@ svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor;
 .mode-toggle button { display: grid; place-items: center; width: 28px; height: 26px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); }
 .mode-toggle button svg.i { width: 15px; height: 15px; }
 .mode-toggle button[aria-pressed="true"] { background: var(--panel-solid); color: var(--text); box-shadow: 0 1px 3px color-mix(in srgb, var(--text) 12%, transparent); }
+.user-card { display: flex; align-items: center; gap: 10px; padding: 8px; margin: 0 -4px; border-radius: 14px; background: var(--hover); }
+.user-card[hidden] { display: none; }
+.user-card img { flex: none; width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--accent-soft); }
+.user-card img[hidden], .user-card .u-initial[hidden] { display: none; }
+.user-card .u-initial { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: var(--accent-text); background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+.user-card .u-text { flex: 1; min-width: 0; }
+.user-card .u-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-card .u-email { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-card .icon-btn { width: 30px; height: 30px; }
+.gsi-slot { display: flex; justify-content: center; min-height: 44px; margin: 4px 0 6px; }
+.signin-note { display: block; font-size: 12px; color: var(--muted); margin-top: 8px; }
 .quota[hidden] { display: none; }
 .quota-text { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 .quota-text b { color: var(--text); font-weight: 600; }

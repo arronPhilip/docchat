@@ -35,6 +35,8 @@ const ICONS = {
   layers: '<path d="M12 2 2 7l10 5 10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
   arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
 };
 const icon = name => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ""}</svg>`;
 const BOT_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4c5 0 9 3.1 9 7s-4 7-9 7c-1 0-2-.1-2.9-.4L5 19.5l1.2-3.6C4.2 14.6 3 12.9 3 11c0-3.9 4-7 9-7z"/><circle cx="8.3" cy="11" r="1.3" fill="var(--accent)"/><circle cx="12" cy="11" r="1.3" fill="var(--accent)"/><circle cx="15.7" cy="11" r="1.3" fill="var(--accent)"/></svg>';
@@ -97,6 +99,7 @@ async function api(path, opts = {}) {
   try { r = await fetch(path, opts); }
   catch (e) { throw new Error("Can't reach the DocChat server. Make sure it's running, then reload the page."); }
   const data = await r.json().catch(() => ({}));
+  if (r.status === 401 && data.auth) { signedOut(); throw new Error(data.error); }
   if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
   return data;
 }
@@ -150,6 +153,7 @@ async function loadChats() {
 
 function renderChatList() {
   const ul = $("#chatList"); ul.innerHTML = "";
+  if (needsSignIn()) { ul.innerHTML = `<li class="chats-empty">Sign in to see your chats.</li>`; return; }
   const term = state.search.trim().toLowerCase();
   const chats = state.chats.filter(c => !term || c.title.toLowerCase().includes(term));
   if (!chats.length) {
@@ -183,6 +187,7 @@ async function openChat(id) {
 
 function newChat() {
   if (state.busy) stopAnswer();
+  if (needsSignIn()) { renderAll(); return; }
   state.chatId = null;
   state.chat = { title: "New chat", docs: [], messages: [], insights: null };
   state.insightsError = null; state.insightsLoading = false;
@@ -242,6 +247,7 @@ async function refreshChatMeta() {
 async function uploadFiles(files) {
   files = [...files];
   if (!files.length) return;
+  if (needsSignIn()) { toast("Sign in with Google first"); return; }
   try {
     const cid = await ensureChat();
     toast(`Uploading ${plural(files.length, "file")}…`, 10000);
@@ -308,6 +314,7 @@ function renderHeader() {
 function renderLog() {
   log.innerHTML = "";
   const c = state.chat;
+  if (needsSignIn()) return renderSignIn();
   if (!c.docs.length && !c.messages.length) return renderWelcome();
   if (!c.messages.length) return renderReady();
   c.messages.forEach((m, i) => {
@@ -334,6 +341,90 @@ function renderWelcome() {
     <div class="features">${FEATURES.map(([ic, t, d]) => `<div class="feature"><span class="f-icon">${icon(ic)}</span><b>${t}</b><span>${d}</span></div>`).join("")}</div>
   </div>`;
   $("[data-act=upload]", log).onclick = () => $("#file").click();
+}
+
+function renderSignIn() {
+  log.innerHTML = `<div class="welcome">
+    <div class="hero">
+      <svg class="logo" aria-hidden="true"><use href="#logo"/></svg>
+      <h2>Chat with any document,<br><em>get answers you can trust.</em></h2>
+      <p>Sign in with your Google account to upload documents and ask questions. Your chats are private to your account.</p>
+      <div class="gsi-slot" id="gsiButton"></div>
+      <span class="signin-note">We only use your name, email and profile picture.</span>
+    </div>
+    <p class="label section-label">How it works</p>
+    <div class="steps">${STEPS.map(([t, d], i) => `<div class="step"><span class="num">${i + 1}</span><div><b>${t}</b><span>${d}</span></div></div>`).join("")}</div>
+    <p class="label section-label">What you can do</p>
+    <div class="features">${FEATURES.map(([ic, t, d]) => `<div class="feature"><span class="f-icon">${icon(ic)}</span><b>${t}</b><span>${d}</span></div>`).join("")}</div>
+  </div>`;
+  mountGoogleButton();
+}
+
+let gsiLoading = null;
+function loadGoogleScript() {
+  if (window.google?.accounts?.id) return Promise.resolve();
+  if (!gsiLoading) gsiLoading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client"; s.async = true;
+    s.onload = resolve; s.onerror = () => { gsiLoading = null; reject(new Error("Couldn't load Google sign-in")); };
+    document.head.appendChild(s);
+  });
+  return gsiLoading;
+}
+
+let gsiReady = false;
+async function mountGoogleButton() {
+  const slot = $("#gsiButton");
+  if (!slot) return;
+  try { await loadGoogleScript(); }
+  catch (e) { slot.innerHTML = `<p class="error">Couldn't load Google sign-in. Check your connection and reload.</p>`; return; }
+  if (!gsiReady) {
+    google.accounts.id.initialize({ client_id: state.config.google_client_id, callback: onGoogleCredential, ux_mode: "popup", auto_select: false });
+    gsiReady = true;
+  }
+  google.accounts.id.renderButton(slot, {
+    theme: document.documentElement.dataset.mode === "dark" ? "filled_black" : "outline",
+    size: "large", shape: "pill", text: "continue_with", logo_alignment: "left", width: 280,
+  });
+}
+
+async function onGoogleCredential(resp) {
+  try {
+    const r = await api("/api/auth/google", { method: "POST", json: { credential: resp.credential } });
+    state.config.user = r.user;
+    renderUser();
+    toast(`Signed in as ${r.user.name}`);
+    await loadChats();
+    if (state.chats.length) await openChat(state.chats[0].id); else newChat();
+  } catch (e) { toast(e.message, 5000); }
+}
+
+function needsSignIn() { return !!state.config.auth && !state.config.user; }
+
+function signedOut() {
+  if (!state.config.auth) return;
+  state.config.user = null; state.chats = []; state.chatId = null;
+  state.chat = { title: "New chat", docs: [], messages: [], insights: null };
+  renderUser(); renderAll();
+}
+
+async function signOut() {
+  try { await api("/api/auth/logout", { method: "POST" }); } catch (e) {}
+  try { window.google?.accounts?.id.disableAutoSelect(); } catch (e) {}
+  signedOut();
+  toast("Signed out");
+}
+
+function renderUser() {
+  const u = state.config.user, card = $("#userCard");
+  card.hidden = !u;
+  if (!u) return;
+  const pic = $("#userPic"), initial = $("#userInitial");
+  pic.hidden = !u.picture; initial.hidden = !!u.picture;
+  if (u.picture) { pic.src = u.picture; pic.onerror = () => { pic.hidden = true; initial.hidden = false; }; }
+  initial.textContent = (u.name || u.email || "?").trim().charAt(0).toUpperCase();
+  $("#userName").textContent = u.name;
+  $("#userEmail").textContent = u.email;
 }
 
 function renderReady() {
@@ -480,6 +571,8 @@ function renderPanel() {
 function updateComposer() {
   const hasDocs = state.chat.docs.length > 0;
   const narrow = innerWidth < 560;
+  if (needsSignIn()) { q.placeholder = "Sign in to start chatting"; q.disabled = true; send.disabled = true; return; }
+  q.disabled = false;
   q.placeholder = hasDocs ? (narrow ? "Ask anything…" : "Ask anything about your documents…") : (narrow ? "Add a document first…" : "Upload a document, then ask anything…");
   if (state.busy) {
     send.disabled = false; send.classList.add("stop"); send.innerHTML = icon("stop"); send.setAttribute("aria-label", "Stop");
@@ -493,6 +586,7 @@ function updateComposer() {
 // ------------------------------------------------------------------ asking
 async function ask(question, display = question, style = state.style) {
   if (state.busy) return;
+  if (needsSignIn()) { toast("Sign in with Google first"); return; }
   if (!state.chat.docs.length) { toast("Add a document first"); $("#file").click(); return; }
   const cid = state.chatId;
   if (!state.chat.messages.length) log.innerHTML = "";
@@ -619,6 +713,7 @@ function wire() {
   document.querySelectorAll("#styles button").forEach(b => b.onclick = () => { state.style = b.dataset.style; savePref("docchat-style", state.style); updateComposer(); });
 
   $("#newChat").onclick = () => { newChat(); closeDrawers(); };
+  $("#signOut").onclick = signOut;
   $("#search").oninput = e => { state.search = e.target.value; renderChatList(); };
   $("#openSidebar").onclick = () => openDrawer($("#sidebar"));
   $("#openPanel").onclick = () => openDrawer($("#panel"));
@@ -673,10 +768,11 @@ async function init() {
   state.chat = { title: "New chat", docs: [], messages: [], insights: null };  // rendered once we know which chat to show
   try {
     state.config = await api("/api/config");
-    renderQuota();
+    renderQuota(); renderUser();
     $("#providerName").textContent = state.config.label;
     $("#providerName").title = state.config.label;
   } catch (e) { $("#providerName").textContent = "Server not reachable"; }
+  if (needsSignIn()) { renderAll(); addEventListener("resize", () => updateComposer()); return; }
   await loadChats();
   if (state.chats.length) await openChat(state.chats[0].id);
   else renderAll();

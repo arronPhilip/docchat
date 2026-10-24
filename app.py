@@ -19,7 +19,7 @@ import sqlite3
 import time
 import uuid
 
-from flask import Flask, Response, g, jsonify, request, send_from_directory, stream_with_context
+from flask import Flask, Response, g, jsonify, request, send_from_directory, session, stream_with_context
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -55,6 +55,23 @@ DAILY_LIMIT = int(os.environ.get("DAILY_LIMIT", "0"))                # per visit
 GLOBAL_DAILY_LIMIT = int(os.environ.get("GLOBAL_DAILY_LIMIT", "0"))  # whole site; 0 = unlimited
 
 MAX_UPLOAD_BYTES = (10 if PUBLIC else 30) * 1024 * 1024  # per chat
+
+# Sign in with Google: set GOOGLE_CLIENT_ID (from Google Cloud > APIs & Services > Credentials) to require login.
+# Without it, DocChat runs without accounts (handy on your own computer).
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+AUTH_ENABLED = bool(GOOGLE_CLIENT_ID)
+
+
+def load_secret_key():
+    """Signs the login cookie. On the host it comes from SECRET_KEY; locally it's kept in .secret_key."""
+    key = os.environ.get("SECRET_KEY", "").strip()
+    if key:
+        return key
+    path = os.path.join(BASE_DIR, ".secret_key")
+    if not os.path.exists(path):
+        with open(path, "w") as f:
+            f.write(uuid.uuid4().hex + uuid.uuid4().hex)
+    return open(path).read().strip()
 TEXT_EXTENSIONS = {".txt", ".md", ".csv", ".json", ".py", ".html", ".log"}
 IMAGE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif"}
 
@@ -104,6 +121,9 @@ PROVIDER_LABEL = {
 
 app = Flask(__name__, static_folder="static")
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES + 1024 * 1024
+app.secret_key = load_secret_key()
+app.config.update(SESSION_COOKIE_SAMESITE="Lax", SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SECURE=PUBLIC,
+                  PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 30)
 if PUBLIC:
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)  # behind the host's proxy: trust its client IP
 
@@ -112,16 +132,20 @@ OWNER_COOKIE = "docchat_uid"
 
 @app.before_request
 def identify_visitor():
-    """Each browser gets a random private ID; visitors only ever see their own chats."""
+    """Signed-in users own chats by Google account; guests get a random private ID per browser."""
+    g.user = session.get("user")
     uid = request.cookies.get(OWNER_COOKIE, "")
     g.new_owner = not re.fullmatch(r"[0-9a-f]{32}", uid)
-    g.owner = uuid.uuid4().hex if g.new_owner else uid
+    g.guest = uuid.uuid4().hex if g.new_owner else uid
+    g.owner = g.user["id"] if g.user else g.guest
+    if AUTH_ENABLED and not g.user and request.path.startswith("/api/chats"):
+        return jsonify({"error": "Please sign in with Google first.", "auth": True}), 401
 
 
 @app.after_request
 def finish_response(resp):
     if getattr(g, "new_owner", False):
-        resp.set_cookie(OWNER_COOKIE, g.owner, max_age=60 * 60 * 24 * 365, httponly=True,
+        resp.set_cookie(OWNER_COOKIE, g.guest, max_age=60 * 60 * 24 * 365, httponly=True,
                         samesite="Lax", secure=request.is_secure)
     # Make the browser re-check the page and its scripts every time, so an update is never hidden by an old cached copy
     if request.path == "/" or request.path.startswith("/static/"):
@@ -170,6 +194,9 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_messages_chat ON messages(chat_id, id);
         CREATE TABLE IF NOT EXISTS usage (key TEXT NOT NULL, day TEXT NOT NULL, count INTEGER NOT NULL,
             PRIMARY KEY (key, day));
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,        -- 'g:' + Google account ID
+            email TEXT, name TEXT, picture TEXT, created REAL NOT NULL, last_login REAL NOT NULL);
         """)
         if "owner" not in [r["name"] for r in con.execute("PRAGMA table_info(chats)")]:
             con.execute("ALTER TABLE chats ADD COLUMN owner TEXT")  # databases from before per-visitor privacy
@@ -638,13 +665,49 @@ def config():
             remaining = max(0, DAILY_LIMIT - usage_today(con, "ip:" + client_ip()))
     return jsonify({"provider": PROVIDER, "label": PROVIDER_LABEL, "images": PROVIDER != "ollama",
                     "citations": PROVIDER == "claude", "public": PUBLIC, "limit": DAILY_LIMIT,
-                    "remaining": remaining, "max_mb": MAX_UPLOAD_BYTES // (1024 * 1024)})
+                    "remaining": remaining, "max_mb": MAX_UPLOAD_BYTES // (1024 * 1024),
+                    "auth": AUTH_ENABLED, "google_client_id": GOOGLE_CLIENT_ID or None, "user": g.user})
+
+
+@app.post("/api/auth/google")
+def google_login():
+    """Verify the ID token from the 'Sign in with Google' button and start a session."""
+    if not AUTH_ENABLED:
+        return error("Google sign-in isn't set up on this server.", 404)
+    credential = (request.get_json(silent=True) or {}).get("credential", "")
+    try:
+        from google.auth.transport import requests as google_requests
+        from google.oauth2 import id_token
+        info = id_token.verify_oauth2_token(credential, google_requests.Request(), GOOGLE_CLIENT_ID,
+                                            clock_skew_in_seconds=10)
+    except Exception:
+        return error("Google sign-in failed. Please try again.", 401)
+    user = {"id": "g:" + info["sub"], "email": info.get("email", ""),
+            "name": info.get("name") or info.get("email", "").split("@")[0], "picture": info.get("picture", "")}
+    now = time.time()
+    with db() as con:
+        con.execute("INSERT INTO users (id, email, name, picture, created, last_login) VALUES (?, ?, ?, ?, ?, ?) "
+                    "ON CONFLICT(id) DO UPDATE SET email = excluded.email, name = excluded.name, "
+                    "picture = excluded.picture, last_login = excluded.last_login",
+                    (user["id"], user["email"], user["name"], user["picture"], now, now))
+        # Chats made in this browser before signing in move into the account
+        con.execute("UPDATE chats SET owner = ? WHERE owner = ?", (user["id"], g.guest))
+    session.clear()
+    session["user"] = user
+    session.permanent = True
+    return jsonify({"user": user})
+
+
+@app.post("/api/auth/logout")
+def logout():
+    session.clear()
+    return jsonify({"ok": True})
 
 
 @app.get("/api/chats")
 def list_chats():
     with db() as con:
-        if not PUBLIC:  # on your own computer, chats saved before per-visitor privacy belong to you
+        if not PUBLIC and not AUTH_ENABLED:  # on your own computer, chats saved before per-visitor privacy are yours
             con.execute("UPDATE chats SET owner = ? WHERE owner IS NULL", (g.owner,))
         rows = con.execute("SELECT * FROM chats WHERE owner = ? ORDER BY updated DESC LIMIT 200", (g.owner,)).fetchall()
         return jsonify([chat_summary(con, r) for r in rows])
